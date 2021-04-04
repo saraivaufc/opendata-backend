@@ -1,0 +1,1 @@
+from .auxilio_amergencial import AuxilioEmergencialSerializer
