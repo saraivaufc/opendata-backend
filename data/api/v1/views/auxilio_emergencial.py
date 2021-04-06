@@ -5,7 +5,7 @@ from data.api.v1.serializers import AuxilioEmergencialSerializer
 from data.models import AuxilioEmergencial
 
 
-class AuxilioEmergencialListRetrieveView(generics.ListAPIView):
+class AuxilioEmergencialListView(generics.ListAPIView):
     serializer_class = AuxilioEmergencialSerializer
     filterset_class = AuxilioEmergencialFilter
     queryset = AuxilioEmergencial.objects.all()

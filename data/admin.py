@@ -6,7 +6,15 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 
 from data.forms import TaskForm
-from data.models import Task, AuxilioEmergencial, CotasParlamentares
+from data.models import (Task, AuxilioEmergencial, CotasParlamentares,
+                         CotasParlamentaresParlamentar,
+                         CotasParlamentaresFornecedor,
+                         CotasParlamentaresPartido,
+                         CotasParlamentaresLegislatura,
+                         CotasParlamentaresTrecho,
+                         CotasParlamentaresUnidadeFederativa,
+                         CotasParlamentaresPassageiro,
+                         CotasParlamentaresTipoDespesa)
 from data.tasks import update_dataset
 
 
@@ -93,8 +101,7 @@ class AuxilioEmergencialAdmin(AddOnlyAdmin, TaskAdmin):
 
     search_fields = ['nis_beneficiario', 'nome_beneficiario',
                      'nis_responsavel', 'nome_responsavel']
-    list_filter = ['ano_disponibilizacao', 'mes_disponibilizacao', 'uf',
-                   'enquadramento', 'parcela']
+    list_filter = []
 
     def get_changelist(self, request, **kwargs):
         self.model = AuxilioEmergencial
@@ -115,12 +122,56 @@ class AuxilioEmergencialAdmin(AddOnlyAdmin, TaskAdmin):
         }
 
 
+class CotasParlamentaresParlamentarAdmin(admin.ModelAdmin):
+    list_display = ['nome', 'cpf', 'id_cadastro',
+                    'numero_carteira_parlamentar']
+    search_fields = ['nome', 'cpf']
+
+
+class CotasParlamentaresPartidoAdmin(admin.ModelAdmin):
+    list_display = ['sigla']
+    search_fields = ['sigla']
+
+
+class CotasParlamentaresLegislaturaAdmin(admin.ModelAdmin):
+    list_display = ['numero']
+    search_fields = ['codigo']
+
+
+class CotasParlamentaresSubcotaAdmin(admin.ModelAdmin):
+    list_display = ['numero', 'descricao', 'numero_especificacao',
+                    'descricao_especificacao']
+    search_fields = ['descricao', 'descricao_especificacao']
+
+
+class CotasParlamentaresFornecedorAdmin(admin.ModelAdmin):
+    list_display = ['nome', 'cnpj_cpf']
+    search_fields = ['nome', 'cnpj_cpf']
+
+
+class CotasParlamentaresPassageiroAdmin(admin.ModelAdmin):
+    list_display = ['nome']
+    search_fields = ['nome']
+
+
+class CotasParlamentaresTrechoAdmin(admin.ModelAdmin):
+    list_display = ['trecho']
+    search_fields = ['trecho']
+
+
+class CotasParlamentaresUnidadeFederativaAdmin(admin.ModelAdmin):
+    list_display = ['sigla']
+    search_fields = ['sigla']
+
+
 class CotasParlamentaresAdmin(AddOnlyAdmin, TaskAdmin):
-    list_display = ['parlamentar', 'nuLegislatura', 'sgUF',
-                    'partido', 'txtDescricao', 'fornecedor',
-                    'passageiro', 'trecho']
-    list_filter = ['parlamentar', 'nuLegislatura', 'partido',
-                   'txtDescricao', 'fornecedor', 'passageiro']
+    list_display = ['parlamentar', 'legislatura', 'unidade_federativa',
+                    'partido', 'tipo_despesa', 'fornecedor',
+                    'passageiro', 'trecho', 'data_emissao',
+                    'valor_documento', 'valor_glosa',
+                    'valor_liquido_documento']
+    search_fields = ['parlamentar__nome', 'parlamentar__cpf']
+    list_filter = ['parlamentar', 'partido']
 
     def get_changelist(self, request, **kwargs):
         self.model = CotasParlamentares
@@ -143,5 +194,32 @@ class CotasParlamentaresAdmin(AddOnlyAdmin, TaskAdmin):
 
 admin.site.register(Task, TaskAdmin)
 
-admin.site.register(AuxilioEmergencial, AuxilioEmergencialAdmin)
-admin.site.register(CotasParlamentares, CotasParlamentaresAdmin)
+admin.site.register(AuxilioEmergencial,
+                    AuxilioEmergencialAdmin)
+
+admin.site.register(CotasParlamentares,
+                    CotasParlamentaresAdmin)
+
+admin.site.register(CotasParlamentaresParlamentar,
+                    CotasParlamentaresParlamentarAdmin)
+
+admin.site.register(CotasParlamentaresPartido,
+                    CotasParlamentaresPartidoAdmin)
+
+admin.site.register(CotasParlamentaresUnidadeFederativa,
+                    CotasParlamentaresUnidadeFederativaAdmin)
+
+admin.site.register(CotasParlamentaresLegislatura,
+                    CotasParlamentaresLegislaturaAdmin)
+
+admin.site.register(CotasParlamentaresTipoDespesa,
+                    CotasParlamentaresSubcotaAdmin)
+
+admin.site.register(CotasParlamentaresFornecedor,
+                    CotasParlamentaresFornecedorAdmin)
+
+admin.site.register(CotasParlamentaresPassageiro,
+                    CotasParlamentaresPassageiroAdmin)
+
+admin.site.register(CotasParlamentaresTrecho,
+                    CotasParlamentaresTrechoAdmin)

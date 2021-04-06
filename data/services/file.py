@@ -2,8 +2,8 @@ import json
 import os
 import tempfile
 from zipfile import ZipFile
-import pandas as pd
 
+import pandas as pd
 import requests
 from dateutil.parser import parse as parsedate
 from osgeo import ogr, osr
@@ -75,8 +75,8 @@ class FileService:
         if not iterate:
             return entries
 
-    def read_csv(self, file_path, sep=None, decimal=None, encoding='utf-8',iterate=False):
-        chunksize = 10 ** 6
+    def read_csv(self, file_path, sep=None, decimal=None, encoding='utf-8',
+                 iterate=False, chunksize=10000):
         entries = []
         with pd.read_csv(file_path, sep=sep,
                          decimal=decimal,
@@ -94,7 +94,6 @@ class FileService:
 
         if not iterate:
             return entries
-
 
     def download_file(self, url, filename):
         response = requests.get(url, verify=False)

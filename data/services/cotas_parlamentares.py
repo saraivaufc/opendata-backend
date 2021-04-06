@@ -1,17 +1,19 @@
-# -*- coding: utf-8 -*-
 import gc
 import tempfile
 
 from dateutil.parser import parse
+from tqdm import tqdm
 from django.db import transaction
 
 from data.models import (Task, CotasParlamentares,
                          CotasParlamentaresParlamentar,
                          CotasParlamentaresFornecedor,
                          CotasParlamentaresPartido,
+                         CotasParlamentaresLegislatura,
+                         CotasParlamentaresUnidadeFederativa,
                          CotasParlamentaresTrecho,
                          CotasParlamentaresPassageiro,
-                         CotasParlamentaresTxtDescricao)
+                         CotasParlamentaresTipoDespesa)
 from data.services.file import FileService
 
 
@@ -30,10 +32,37 @@ class CotasParlamentaresService:
         entries = self.__file_service.read_csv(file_path=unziped_file,
                                                sep=';',
                                                decimal=',',
-                                               encoding='latin1',
-                                               iterate=True)
+                                               encoding='utf-8',
+                                               iterate=True,
+                                               chunksize=10000)
 
-        for data in entries:
+        batch = []
+
+        parlamentares_values = []
+        parlamentares_objs = []
+
+        partidos_values = []
+        partidos_objs = []
+
+        legislaturas_values = []
+        legislaturas_objs = []
+
+        unidades_federativas_values = []
+        unidades_federativas_objs = []
+
+        tipo_despesas_values = []
+        tipo_despesas_objs = []
+
+        fornecedores_values = []
+        fornecedores_objs = []
+
+        passageiros_values = []
+        passageiros_objs = []
+
+        trechos_values = []
+        trechos_objs = []
+
+        for data in tqdm(entries, miniters=10000):
             txNomeParlamentar = data.get('txNomeParlamentar')
             cpf = data.get('cpf')
             ideCadastro = data.get('ideCadastro')
@@ -66,27 +95,122 @@ class CotasParlamentaresService:
             ideDocumento = data.get('ideDocumento')
             urlDocumento = data.get('urlDocumento')
 
-            parlamentar, _ = CotasParlamentaresParlamentar.objects \
-                .get_or_create(txNomeParlamentar=txNomeParlamentar,
-                               cpf=cpf,
-                               ideCadastro=ideCadastro,
-                               nuCarteiraParlamentar=nuCarteiraParlamentar)
+            parlamentar_dict = {
+                'nome': txNomeParlamentar,
+                'cpf': cpf,
+                'id_cadastro': ideCadastro,
+                'numero_carteira_parlamentar': nuCarteiraParlamentar
+            }
 
-            partido, _ = CotasParlamentaresPartido.objects \
-                .get_or_create(sgPartido=sgPartido)
+            try:
+                index = parlamentares_values.index(parlamentar_dict)
+                parlamentar = parlamentares_objs[index]
+            except:
+                parlamentar, _ = CotasParlamentaresParlamentar.objects \
+                    .get_or_create(**parlamentar_dict)
 
-            txtDescricao, _ = CotasParlamentaresTxtDescricao.objects \
-                .get_or_create(txtDescricao=txtDescricao)
+                parlamentares_values.append(parlamentar_dict)
+                parlamentares_objs.append(parlamentar)
 
-            fornecedor, _ = CotasParlamentaresFornecedor.objects \
-                .get_or_create(txtFornecedor=txtFornecedor,
-                               txtCNPJCPF=txtCNPJCPF)
+            if sgPartido:
+                sgPartido = sgPartido.replace('*', '')
 
-            passageiro, _ = CotasParlamentaresPassageiro.objects \
-                .get_or_create(txtPassageiro=txtPassageiro)
+            partido_dict = {
+                'sigla': sgPartido
+            }
+            try:
+                index = partidos_values.index(partido_dict)
+                partido = partidos_objs[index]
+            except:
+                partido, _ = CotasParlamentaresPartido.objects \
+                    .get_or_create(**partido_dict)
 
-            trecho, _ = CotasParlamentaresTrecho.objects \
-                .get_or_create(txtTrecho=txtTrecho)
+                partidos_values.append(partido_dict)
+                partidos_objs.append(partido)
+
+            legislatura_dict = {
+                'numero': nuLegislatura,
+                'codigo': codLegislatura
+            }
+            try:
+                index = legislaturas_values.index(legislatura_dict)
+                legislatura = legislaturas_objs[index]
+            except:
+                legislatura, _ = CotasParlamentaresLegislatura.objects \
+                    .get_or_create(**legislatura_dict)
+
+                legislaturas_values.append(legislatura_dict)
+                legislaturas_objs.append(legislatura)
+
+            unidade_federativa_dict = {
+                'sigla': sgUF,
+            }
+            try:
+                index = unidades_federativas_values.index(unidade_federativa_dict)
+                unidade_federativa = unidades_federativas_objs[index]
+            except:
+                unidade_federativa, _ = CotasParlamentaresUnidadeFederativa.objects \
+                    .get_or_create(**unidade_federativa_dict)
+
+                unidades_federativas_values.append(unidade_federativa_dict)
+                unidades_federativas_objs.append(unidade_federativa)
+
+            tipo_despesa_dict = {
+                'numero': numSubCota,
+                'descricao': txtDescricao,
+                'numero_especificacao': numEspecificacaoSubCota,
+                'descricao_especificacao': txtDescricaoEspecificacao
+            }
+            try:
+                index = tipo_despesas_values.index(tipo_despesa_dict)
+                tipo_despesa = tipo_despesas_objs[index]
+            except:
+                tipo_despesa, _ = CotasParlamentaresTipoDespesa.objects \
+                    .get_or_create(**tipo_despesa_dict)
+
+                tipo_despesas_values.append(tipo_despesa_dict)
+                tipo_despesas_objs.append(tipo_despesa)
+
+            fornecedor_values = {
+                'nome': txtFornecedor,
+                'cnpj_cpf': txtCNPJCPF
+            }
+            try:
+                index = fornecedores_values.index(fornecedor_values)
+                fornecedor = fornecedores_objs[index]
+            except:
+                fornecedor, _ = CotasParlamentaresFornecedor.objects \
+                    .get_or_create(**fornecedor_values)
+
+                fornecedores_values.append(fornecedor_values)
+                fornecedores_objs.append(fornecedor)
+
+            passageiro_dict = {
+                'nome': txtPassageiro
+            }
+            try:
+                index = passageiros_values.index(passageiro_dict)
+                passageiro = passageiros_objs[index]
+            except:
+                passageiro, _ = CotasParlamentaresPassageiro.objects \
+                    .get_or_create(**passageiro_dict)
+
+                passageiros_values.append(passageiro_dict)
+                passageiros_objs.append(passageiro)
+
+            trecho_values = {
+                'trecho': txtTrecho
+            }
+
+            try:
+                index = trechos_values.index(trecho_values)
+                trecho = trechos_objs[index]
+            except:
+                trecho, _ = CotasParlamentaresTrecho.objects \
+                    .get_or_create(**trecho_values)
+
+                trechos_values.append(trecho_values)
+                trechos_objs.append(trecho)
 
             if datEmissao:
                 try:
@@ -97,35 +221,42 @@ class CotasParlamentaresService:
             entry = {
                 'task': task,
                 'parlamentar': parlamentar,
-                'nuLegislatura': nuLegislatura,
-                'sgUF': sgUF,
                 'partido': partido,
-                'codLegislatura': codLegislatura,
-                'numSubCota': numSubCota,
-                'txtDescricao': txtDescricao,
-                'numEspecificacaoSubCota': numEspecificacaoSubCota,
-                'txtDescricaoEspecificacao': txtDescricaoEspecificacao,
+                'legislatura': legislatura,
+                'unidade_federativa': unidade_federativa,
+                'tipo_despesa': tipo_despesa,
                 'fornecedor': fornecedor,
-                'txtNumero': txtNumero,
-                'indTipoDocumento': indTipoDocumento,
-                'datEmissao': datEmissao,
-                'vlrDocumento': vlrDocumento,
-                'vlrGlosa': vlrGlosa,
-                'vlrLiquido': vlrLiquido,
-                'numMes': numMes,
-                'numAno': numAno,
-                'numParcela': numParcela,
+
+                # documento
+                'numero_documento': txtNumero,
+                'tipo_documento': indTipoDocumento,
+                'parcela_documento': numParcela,
+                'data_emissao': datEmissao,
+                'valor_documento': vlrDocumento,
+                'valor_glosa': vlrGlosa,
+                'valor_liquido_documento': vlrLiquido,
+                'id_documento': ideDocumento,
+                'url_documento': urlDocumento,
+                'mes_documento': numMes,
+                'ano_documento': numAno,
+
                 'passageiro': passageiro,
                 'trecho': trecho,
-                'numLote': numLote,
-                'numRessarcimento': numRessarcimento,
-                'vlrRestituicao': vlrRestituicao,
-                'nuDeputadoId': nuDeputadoId,
-                'ideDocumento': ideDocumento,
-                'urlDocumento': urlDocumento
+
+                'numero_lote': numLote,
+                'numero_ressarcimento': numRessarcimento,
+                'valor_restituicao': vlrRestituicao,
+                'identificar_solicitante': nuDeputadoId
             }
 
-            CotasParlamentares.objects.create(**entry)
+            batch.append(CotasParlamentares(**entry))
+
+            if batch == 100000:
+                CotasParlamentares.objects.bulk_create(batch)
+                batch = []
+                gc.collect()
+
+        CotasParlamentares.objects.bulk_create(batch)
 
         task.status = Task.COMPLETED
 

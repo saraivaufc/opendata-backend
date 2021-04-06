@@ -1,6 +1,7 @@
-# -*- coding: utf-8 -*-
 import gc
 import re
+import tempfile
+from tqdm import tqdm
 
 from django.db import transaction
 
@@ -15,16 +16,23 @@ class AuxilioEmergencialService:
     @transaction.atomic
     def update_dataset(self, task, file_path):
 
-        entries = self.__file_service.read_csv(file_path=file_path,
+        temp_dir = tempfile.TemporaryDirectory()
+
+        files = self.__file_service.unzip_file(file_path, temp_dir.name)
+
+        unziped_file = list(filter(lambda f: f.find('.csv') != -1, files))[0]
+
+        entries = self.__file_service.read_csv(file_path=unziped_file,
                                                sep=';',
                                                decimal=',',
                                                encoding='latin1',
                                                iterate=True)
 
-        for data in entries:
-            ano_mes_disponibilizacao = int(data.get('MÊS DISPONIBILIZAÇÃO'))
-            ano_disponibilizacao = int(ano_mes_disponibilizacao / 100)
-            mes_disponibilizacao = int(ano_mes_disponibilizacao % 100)
+        batch = []
+        count = 0
+
+        for data in tqdm(entries, miniters=10000):
+            mes_disponibilizacao = data.get('MÊS DISPONIBILIZAÇÃO')
             uf = data.get('UF')
             codigo_municipio = data.get('CÓDIGO MUNICÍPIO IBGE')
             nome_municipio = data.get('NOME MUNICÍPIO')
@@ -36,6 +44,10 @@ class AuxilioEmergencialService:
             nome_responsavel = data.get('NOME RESPONSÁVEL')
             enquadramento = data.get('ENQUADRAMENTO')
             parcela = data.get('PARCELA')
+
+            ano_mes_disponibilizacao = int(mes_disponibilizacao)
+            ano_disponibilizacao = int(ano_mes_disponibilizacao / 100)
+            mes_disponibilizacao = int(ano_mes_disponibilizacao % 100)
 
             if parcela:
                 parcela = int(re.sub("[^0-9]", "", parcela))
@@ -62,7 +74,17 @@ class AuxilioEmergencialService:
                 'valor_beneficio': valor_beneficio
             }
 
-            AuxilioEmergencial.objects.create(**entry)
+            batch.append(AuxilioEmergencial(**entry))
+
+            if count == 100000:
+                AuxilioEmergencial.objects.bulk_create(batch)
+                batch = []
+                count = 0
+                gc.collect()
+            else:
+                count += 1
+
+        AuxilioEmergencial.objects.bulk_create(batch)
 
         task.status = Task.COMPLETED
 
