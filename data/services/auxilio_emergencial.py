@@ -1,11 +1,13 @@
 import gc
 import re
 import tempfile
-from tqdm import tqdm
 
 from django.db import transaction
+from tqdm import tqdm
 
-from data.models import AuxilioEmergencial, Task
+from data.models import AuxilioEmergencial, \
+    AuxilioEmergencialUnidadeFederativa, AuxilioEmergencialMunicipio, \
+    AuxilioEmergencialEnquadramento, Task
 from data.services.file import FileService
 
 
@@ -29,9 +31,19 @@ class AuxilioEmergencialService:
                                                iterate=True)
 
         batch = []
+
+        unidades_federativas_values = []
+        unidades_federativas_objs = []
+
+        municipios_values = []
+        municipios_objs = []
+
+        enquadramentos_values = []
+        enquadramentos_objs = []
+
         count = 0
 
-        for data in tqdm(entries, miniters=10000):
+        for data in tqdm(entries, miniters=100000):
             mes_disponibilizacao = data.get('MÊS DISPONIBILIZAÇÃO')
             uf = data.get('UF')
             codigo_municipio = data.get('CÓDIGO MUNICÍPIO IBGE')
@@ -55,13 +67,57 @@ class AuxilioEmergencialService:
             observacao = data.get('OBSERVAÇÃO')
             valor_beneficio = data.get('VALOR BENEFÍCIO')
 
+            unidade_federativa_dict = {
+                'sigla': uf
+            }
+            try:
+                index = unidades_federativas_values.index(
+                    unidade_federativa_dict)
+                unidade_federativa = unidades_federativas_objs[index]
+            except:
+                unidade_federativa, _ = AuxilioEmergencialUnidadeFederativa \
+                    .objects \
+                    .select_for_update() \
+                    .get_or_create(**unidade_federativa_dict)
+
+                unidades_federativas_values.append(unidade_federativa_dict)
+                unidades_federativas_objs.append(unidade_federativa)
+
+            municipio_dict = {
+                'codigo_municipio': codigo_municipio,
+                'nome_municipio': nome_municipio
+            }
+            try:
+                index = municipios_values.index(municipio_dict)
+                municipio = municipios_objs[index]
+            except:
+                municipio, _ = AuxilioEmergencialMunicipio.objects \
+                    .select_for_update() \
+                    .get_or_create(**municipio_dict)
+
+                municipios_values.append(municipio_dict)
+                municipios_objs.append(municipio)
+
+            enquadramento_dict = {
+                'tipo': enquadramento,
+            }
+            try:
+                index = enquadramentos_values.index(enquadramento_dict)
+                enquadramento = enquadramentos_objs[index]
+            except:
+                enquadramento, _ = AuxilioEmergencialEnquadramento.objects \
+                    .select_for_update() \
+                    .get_or_create(**enquadramento_dict)
+
+                enquadramentos_values.append(enquadramento_dict)
+                enquadramentos_objs.append(enquadramento)
+
             entry = {
                 'task': task,
                 'ano_disponibilizacao': ano_disponibilizacao,
                 'mes_disponibilizacao': mes_disponibilizacao,
-                'uf': uf,
-                'codigo_municipio': codigo_municipio,
-                'nome_municipio': nome_municipio,
+                'unidade_federativa': unidade_federativa,
+                'municipio': municipio,
                 'nis_beneficiario': nis_beneficiario,
                 'cpf_beneficiario': cpf_beneficiario,
                 'nome_beneficiario': nome_beneficiario,

@@ -47,7 +47,7 @@ class CotasParlamentaresTipoDespesaSerializer(serializers.ModelSerializer):
 class CotasParlamentaresSerializer(serializers.ModelSerializer):
     parlamentar = CotasParlamentaresParlamentarSerializer(many=False)
     partido = CotasParlamentaresPartidoSerializer(many=False)
-    descricao = CotasParlamentaresTipoDespesaSerializer(many=False)
+    tipo_despesa = CotasParlamentaresTipoDespesaSerializer(many=False)
     fornecedor = CotasParlamentaresFornecedorSerializer(many=False)
     passageiro = CotasParlamentaresPassageiroSerializer(many=False)
     trecho = CotasParlamentaresTrechoSerializer(many=False)

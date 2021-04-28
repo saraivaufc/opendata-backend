@@ -42,12 +42,16 @@ def update_dataset(task_id):
     task.save()
 
     service = get_service[task.dataset]
-
-    if service.update_dataset(task, file):
-        task.status = Task.COMPLETED
-    else:
+    try:
+        if service.update_dataset(task, file):
+            task.status = Task.COMPLETED
+        else:
+            task.status = Task.FAILED
+            task.details = 'Aborted - an error has occurred.'
+    except Exception as e:
         task.status = Task.FAILED
-        task.details = 'Aborted - an error has occurred.'
+        task.details = str(e)
+
     task.save()
 
     if settings.PRODUCTION:

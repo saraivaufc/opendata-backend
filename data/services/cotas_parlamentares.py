@@ -37,6 +37,7 @@ class CotasParlamentaresService:
                                                chunksize=10000)
 
         batch = []
+        count = 0
 
         parlamentares_values = []
         parlamentares_objs = []
@@ -107,6 +108,7 @@ class CotasParlamentaresService:
                 parlamentar = parlamentares_objs[index]
             except:
                 parlamentar, _ = CotasParlamentaresParlamentar.objects \
+                    .select_for_update() \
                     .get_or_create(**parlamentar_dict)
 
                 parlamentares_values.append(parlamentar_dict)
@@ -123,6 +125,7 @@ class CotasParlamentaresService:
                 partido = partidos_objs[index]
             except:
                 partido, _ = CotasParlamentaresPartido.objects \
+                    .select_for_update() \
                     .get_or_create(**partido_dict)
 
                 partidos_values.append(partido_dict)
@@ -137,6 +140,7 @@ class CotasParlamentaresService:
                 legislatura = legislaturas_objs[index]
             except:
                 legislatura, _ = CotasParlamentaresLegislatura.objects \
+                    .select_for_update() \
                     .get_or_create(**legislatura_dict)
 
                 legislaturas_values.append(legislatura_dict)
@@ -150,6 +154,7 @@ class CotasParlamentaresService:
                 unidade_federativa = unidades_federativas_objs[index]
             except:
                 unidade_federativa, _ = CotasParlamentaresUnidadeFederativa.objects \
+                    .select_for_update() \
                     .get_or_create(**unidade_federativa_dict)
 
                 unidades_federativas_values.append(unidade_federativa_dict)
@@ -166,6 +171,7 @@ class CotasParlamentaresService:
                 tipo_despesa = tipo_despesas_objs[index]
             except:
                 tipo_despesa, _ = CotasParlamentaresTipoDespesa.objects \
+                    .select_for_update() \
                     .get_or_create(**tipo_despesa_dict)
 
                 tipo_despesas_values.append(tipo_despesa_dict)
@@ -180,6 +186,7 @@ class CotasParlamentaresService:
                 fornecedor = fornecedores_objs[index]
             except:
                 fornecedor, _ = CotasParlamentaresFornecedor.objects \
+                    .select_for_update() \
                     .get_or_create(**fornecedor_values)
 
                 fornecedores_values.append(fornecedor_values)
@@ -193,6 +200,7 @@ class CotasParlamentaresService:
                 passageiro = passageiros_objs[index]
             except:
                 passageiro, _ = CotasParlamentaresPassageiro.objects \
+                    .select_for_update() \
                     .get_or_create(**passageiro_dict)
 
                 passageiros_values.append(passageiro_dict)
@@ -207,6 +215,7 @@ class CotasParlamentaresService:
                 trecho = trechos_objs[index]
             except:
                 trecho, _ = CotasParlamentaresTrecho.objects \
+                    .select_for_update() \
                     .get_or_create(**trecho_values)
 
                 trechos_values.append(trecho_values)
@@ -251,10 +260,13 @@ class CotasParlamentaresService:
 
             batch.append(CotasParlamentares(**entry))
 
-            if batch == 100000:
+            if count == 100000:
                 CotasParlamentares.objects.bulk_create(batch)
                 batch = []
+                count = 0
                 gc.collect()
+            else:
+                count += 1
 
         CotasParlamentares.objects.bulk_create(batch)
 

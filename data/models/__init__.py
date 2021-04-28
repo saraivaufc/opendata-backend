@@ -1,4 +1,7 @@
-from .auxilio_emergencial import AuxilioEmergencial
+from .auxilio_emergencial import (AuxilioEmergencial,
+                                  AuxilioEmergencialUnidadeFederativa,
+                                  AuxilioEmergencialMunicipio,
+                                  AuxilioEmergencialEnquadramento)
 from .cotas_parlamentares import (CotasParlamentaresPassageiro,
                                   CotasParlamentaresFornecedor,
                                   CotasParlamentaresTrecho,
@@ -8,4 +11,6 @@ from .cotas_parlamentares import (CotasParlamentaresPassageiro,
                                   CotasParlamentaresParlamentar,
                                   CotasParlamentaresLegislatura,
                                   CotasParlamentares)
+from .cotacoes_historicas_b3 import CotacoesHistoricasB3
+
 from .task import Task

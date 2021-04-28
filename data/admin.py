@@ -6,7 +6,12 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 
 from data.forms import TaskForm
-from data.models import (Task, AuxilioEmergencial, CotasParlamentares,
+from data.models import (Task,
+                         AuxilioEmergencial,
+                         AuxilioEmergencialUnidadeFederativa,
+                         AuxilioEmergencialMunicipio,
+                         AuxilioEmergencialEnquadramento,
+                         CotasParlamentares,
                          CotasParlamentaresParlamentar,
                          CotasParlamentaresFornecedor,
                          CotasParlamentaresPartido,
@@ -14,7 +19,8 @@ from data.models import (Task, AuxilioEmergencial, CotasParlamentares,
                          CotasParlamentaresTrecho,
                          CotasParlamentaresUnidadeFederativa,
                          CotasParlamentaresPassageiro,
-                         CotasParlamentaresTipoDespesa)
+                         CotasParlamentaresTipoDespesa,
+                         CotacoesHistoricasB3)
 from data.tasks import update_dataset
 
 
@@ -29,13 +35,22 @@ class AddOnlyAdmin:
         return True
 
 
-class TaskAdmin(admin.ModelAdmin):
-    list_display = ['dataset', 'provider_date', 'source_date', 'status',
-                    'approved', 'is_active', 'creation_date',
-                    'last_modification_date']
+class ReadOnlyAdmin:
+    def has_add_permission(self, request, obj=None):
+        return False
 
-    list_filter = ['dataset', 'status', 'provider_date', 'source_date',
-                   'is_active']
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return True
+
+
+class TaskAdmin(admin.ModelAdmin):
+    list_display = ['dataset', 'source_date', 'status',
+                    'creation_date', 'last_modification_date']
+
+    list_filter = ['dataset', 'status', 'source_date']
 
     def has_add_permission(self, request, obj=None):
         return False
@@ -90,9 +105,25 @@ class TaskAdmin(admin.ModelAdmin):
         update_dataset.apply_async([task.id])
 
 
+class AuxilioEmergencialUnidadeFederativaAdmin(ReadOnlyAdmin,
+                                               admin.ModelAdmin):
+    list_display = ['sigla']
+    search_fields = ['sigla']
+
+
+class AuxilioEmergencialMunicipioAdmin(ReadOnlyAdmin, admin.ModelAdmin):
+    list_display = ['codigo_municipio', 'nome_municipio']
+    search_fields = ['nome_municipio', 'nome_municipio']
+
+
+class AuxilioEmergencialEnquadramentoAdmin(ReadOnlyAdmin, admin.ModelAdmin):
+    list_display = ['tipo']
+    search_fields = ['tipo']
+
+
 class AuxilioEmergencialAdmin(AddOnlyAdmin, TaskAdmin):
     list_display = ['ano_disponibilizacao',
-                    'mes_disponibilizacao', 'uf', 'nome_municipio',
+                    'mes_disponibilizacao',
                     'nis_beneficiario', 'cpf_beneficiario',
                     'nome_beneficiario', 'nis_responsavel',
                     'cpf_responsavel', 'nome_responsavel',
@@ -122,44 +153,45 @@ class AuxilioEmergencialAdmin(AddOnlyAdmin, TaskAdmin):
         }
 
 
-class CotasParlamentaresParlamentarAdmin(admin.ModelAdmin):
+class CotasParlamentaresParlamentarAdmin(ReadOnlyAdmin, admin.ModelAdmin):
     list_display = ['nome', 'cpf', 'id_cadastro',
                     'numero_carteira_parlamentar']
     search_fields = ['nome', 'cpf']
 
 
-class CotasParlamentaresPartidoAdmin(admin.ModelAdmin):
+class CotasParlamentaresPartidoAdmin(ReadOnlyAdmin, admin.ModelAdmin):
     list_display = ['sigla']
     search_fields = ['sigla']
 
 
-class CotasParlamentaresLegislaturaAdmin(admin.ModelAdmin):
+class CotasParlamentaresLegislaturaAdmin(ReadOnlyAdmin, admin.ModelAdmin):
     list_display = ['numero']
     search_fields = ['codigo']
 
 
-class CotasParlamentaresSubcotaAdmin(admin.ModelAdmin):
+class CotasParlamentaresSubcotaAdmin(ReadOnlyAdmin, admin.ModelAdmin):
     list_display = ['numero', 'descricao', 'numero_especificacao',
                     'descricao_especificacao']
     search_fields = ['descricao', 'descricao_especificacao']
 
 
-class CotasParlamentaresFornecedorAdmin(admin.ModelAdmin):
+class CotasParlamentaresFornecedorAdmin(ReadOnlyAdmin, admin.ModelAdmin):
     list_display = ['nome', 'cnpj_cpf']
     search_fields = ['nome', 'cnpj_cpf']
 
 
-class CotasParlamentaresPassageiroAdmin(admin.ModelAdmin):
+class CotasParlamentaresPassageiroAdmin(ReadOnlyAdmin, admin.ModelAdmin):
     list_display = ['nome']
     search_fields = ['nome']
 
 
-class CotasParlamentaresTrechoAdmin(admin.ModelAdmin):
+class CotasParlamentaresTrechoAdmin(ReadOnlyAdmin, admin.ModelAdmin):
     list_display = ['trecho']
     search_fields = ['trecho']
 
 
-class CotasParlamentaresUnidadeFederativaAdmin(admin.ModelAdmin):
+class CotasParlamentaresUnidadeFederativaAdmin(ReadOnlyAdmin,
+                                               admin.ModelAdmin):
     list_display = ['sigla']
     search_fields = ['sigla']
 
@@ -192,10 +224,46 @@ class CotasParlamentaresAdmin(AddOnlyAdmin, TaskAdmin):
         }
 
 
+class CotacoesHistoricasB3Admin(AddOnlyAdmin, TaskAdmin):
+    list_display = ['datpre', 'codneg', 'nomres', 'modref',
+                    'preabe', 'premax', 'premin', 'premed', 'preult',
+                    'preofc', 'preofv']
+    search_fields = ['codneg']
+    list_filter = []
+    date_hierarchy = 'datpre'
+
+    def get_changelist(self, request, **kwargs):
+        self.model = CotacoesHistoricasB3
+        return super(CotacoesHistoricasB3Admin, self) \
+            .get_changelist(request, **kwargs)
+
+    def get_form(self, request, obj=None, **kwargs):
+        if obj:
+            self.form = ModelForm
+            self.readonly_fields = self.list_display
+        return super(CotacoesHistoricasB3Admin, self).get_form(request, obj,
+                                                               **kwargs)
+
+    def get_changeform_initial_data(self, request):
+        return {
+            'dataset': Task.COTACOES_HISTORICAS_B3,
+            'source_format': Task.CSV
+        }
+
+
 admin.site.register(Task, TaskAdmin)
 
 admin.site.register(AuxilioEmergencial,
                     AuxilioEmergencialAdmin)
+
+admin.site.register(AuxilioEmergencialUnidadeFederativa,
+                    AuxilioEmergencialUnidadeFederativaAdmin)
+
+admin.site.register(AuxilioEmergencialMunicipio,
+                    AuxilioEmergencialMunicipioAdmin)
+
+admin.site.register(AuxilioEmergencialEnquadramento,
+                    AuxilioEmergencialEnquadramentoAdmin)
 
 admin.site.register(CotasParlamentares,
                     CotasParlamentaresAdmin)
@@ -223,3 +291,6 @@ admin.site.register(CotasParlamentaresPassageiro,
 
 admin.site.register(CotasParlamentaresTrecho,
                     CotasParlamentaresTrechoAdmin)
+
+admin.site.register(CotacoesHistoricasB3,
+                    CotacoesHistoricasB3Admin)

@@ -17,10 +17,12 @@ def get_file_path(instance, filename):
 class Task(models.Model):
     AUXILIO_EMERGENCIAL = 'AUXILIO_EMERGENCIAL'
     COTAS_PARLAMENTARES = 'COTAS_PARLAMENTARES'
+    COTACOES_HISTORICAS_B3 = 'COTACOES_HISTORICAS_B3'
 
     DATASET_CHOICES = (
         (AUXILIO_EMERGENCIAL, _('Auxílio Emergêncial')),
         (COTAS_PARLAMENTARES, _('Cotas Parlamentares')),
+        (COTACOES_HISTORICAS_B3, _('Cotações Históricas B3')),
     )
 
     READY = 'READY'
@@ -53,10 +55,6 @@ class Task(models.Model):
                                choices=DATASET_CHOICES,
                                max_length=40)
 
-    provider_date = models.DateTimeField(verbose_name=_('Provider date'),
-                                         null=True,
-                                         blank=True)
-
     source = models.FileField(verbose_name=_('Source'),
                               storage=PrivateMediaStorage(),
                               upload_to=get_file_path,
@@ -78,13 +76,9 @@ class Task(models.Model):
                               max_length=40,
                               default=READY)
 
-    approved = models.BooleanField(verbose_name=_('Approved'), default=False)
-
     details = models.TextField(verbose_name=_('Details'),
                                null=True,
                                blank=True)
-
-    is_active = models.BooleanField(verbose_name=_('Is active'), default=True)
 
     creation_date = models.DateTimeField(verbose_name=_('Creation date'),
                                          auto_now_add=True,
@@ -95,7 +89,7 @@ class Task(models.Model):
         auto_now=True)
 
     def __str__(self):
-        return f'{self.provider_date}/{self.source_date}'
+        return f'{self.source_date}'
 
     class Meta:
         ordering = ['-creation_date']
@@ -104,7 +98,5 @@ class Task(models.Model):
         indexes = [
             models.Index(fields=['dataset']),
             models.Index(fields=['source_date']),
-            models.Index(fields=['status']),
-            models.Index(fields=['approved']),
-            models.Index(fields=['is_active']),
+            models.Index(fields=['status'])
         ]

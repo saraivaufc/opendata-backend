@@ -1,4 +1,7 @@
-from .auxilio_amergencial import AuxilioEmergencialSerializer
+from .auxilio_amergencial import (AuxilioEmergencialSerializer,
+                                  AuxilioEmergencialUnidadeFederativaSerializer,
+                                  AuxilioEmergencialMunicipioSerializer,
+                                  AuxilioEmergencialEnquadramentoSerializer)
 from .cotas_parlamentares import (CotasParlamentaresSerializer,
                                   CotasParlamentaresParlamentarSerializer,
                                   CotasParlamentaresTrechoSerializer,
