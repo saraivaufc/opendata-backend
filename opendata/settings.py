@@ -32,6 +32,8 @@ DEBUG = True
 
 PRODUCTION = False
 
+CORS_ORIGIN_ALLOW_ALL = not PRODUCTION
+
 ALLOWED_HOSTS = []
 
 # Application definition
@@ -55,6 +57,7 @@ THIRD_PARTY_APPS = [
     'django_filters',
     'django_celery_results',
     'django_celery_beat',
+    'corsheaders',
 ]
 
 LOCAL_APPS = [
@@ -71,6 +74,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware'
 ]
 
 ROOT_URLCONF = 'opendata.urls'
@@ -164,8 +168,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
-        'rest_framework.renderers.BrowsableAPIRenderer',
         'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
     ),
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',

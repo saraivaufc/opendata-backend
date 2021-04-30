@@ -136,3 +136,7 @@ data/migrations/*
 
 # Pycharm
 .idea
+
+data/migrations/*
+!data/migrations/__init__.py
+!data/migrations/0001_initial.py

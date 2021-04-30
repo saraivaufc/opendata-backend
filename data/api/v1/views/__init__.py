@@ -9,3 +9,5 @@ from .cotas_parlamentares import (CotasParlamentaresListView,
                                   CotasParlamentaresFornecedorListView,
                                   CotasParlamentaresPassageiroListView,
                                   CotasParlamentaresTrechoListView)
+from .cotacoes_historicas_b3 import (CotacoesHistoricasB3ListView,
+                                     CotacoesHistoricasB3EmpresaEmissoraView)

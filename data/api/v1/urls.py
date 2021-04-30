@@ -10,7 +10,9 @@ from .views import (AuxilioEmergencialListView,
                     CotasParlamentaresTipoDespesaListView,
                     CotasParlamentaresFornecedorListView,
                     CotasParlamentaresPassageiroListView,
-                    CotasParlamentaresTrechoListView)
+                    CotasParlamentaresTrechoListView,
+                    CotacoesHistoricasB3ListView,
+                    CotacoesHistoricasB3EmpresaEmissoraView)
 
 urlpatterns = [
     path('auxilio_emergencial/pagamentos',
@@ -45,4 +47,10 @@ urlpatterns = [
     path('cotas_parlamentares/trechos',
          CotasParlamentaresTrechoListView.as_view(),
          name='cotas_parlamentares_trechos'),
+    path('cotacoes_historicas_b3',
+         CotacoesHistoricasB3ListView.as_view(),
+         name='cotacoes_historicas_b3'),
+    path('cotacoes_historicas_b3/empresas_emissoras',
+         CotacoesHistoricasB3EmpresaEmissoraView.as_view(),
+         name='cotacoes_historicas_b3'),
 ]

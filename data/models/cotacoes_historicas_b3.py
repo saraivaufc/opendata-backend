@@ -16,7 +16,7 @@ class CotacoesHistoricasB3(models.Model):
 
     nomres = models.CharField(
         verbose_name=_('NOME RESUMIDO DA EMPRESA EMISSORA DO PAPEL'),
-        max_length=12)
+        max_length=12, null=True, blank=True)
 
     especi = models.CharField(verbose_name=_('ESPECIFICAÇÃO DO PAPEL'),
                               max_length=10)
@@ -25,7 +25,7 @@ class CotacoesHistoricasB3(models.Model):
         verbose_name=_('PRAZO EM DIAS DO MERCADO A TERMO'), null=True)
 
     modref = models.CharField(verbose_name=_('MOEDA DE REFERÊNCIA'),
-                              max_length=3)
+                              max_length=4)
 
     preabe = models.FloatField(verbose_name=_('PREÇO DE ABERTURA  DO PAPEL'))
 
@@ -54,7 +54,7 @@ class CotacoesHistoricasB3(models.Model):
     voltot = models.BigIntegerField(
         verbose_name=_('VOLUME TOTAL DE TÍTULOS NEGOCIADOS NESTE PAPEL'))
 
-    preexe = models.IntegerField(
+    preexe = models.BigIntegerField(
         verbose_name=_('PREÇO DE EXERCÍCIOS PARA O MERCADO DE OPÇÕES'))
 
     indopc = models.IntegerField(
@@ -63,9 +63,9 @@ class CotacoesHistoricasB3(models.Model):
     datven = models.DateField(
         verbose_name=_('DATA DO VENCIMENTO PARA OS MERCADOS'))
 
-    fatcot = models.IntegerField(verbose_name=_('FATOR DE COTAÇÃO DO PAPEL'))
+    fatcot = models.BigIntegerField(verbose_name=_('FATOR DE COTAÇÃO DO PAPEL'))
 
-    ptoexe = models.IntegerField(
+    ptoexe = models.BigIntegerField(
         verbose_name=_('PREÇO DE EXERCÍCIO EM PONTOS PARA OPÇÕES REFERENCIADAS'
                        ' EM DÓLAR OU VALOR DE CONTRATO EM PONTOS PARA TERMO'
                        ' SECUNDÁRIO'))

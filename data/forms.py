@@ -5,9 +5,6 @@ from data.models import Task
 
 
 class TaskForm(forms.ModelForm):
-    provider_date = forms.SplitDateTimeField(
-        widget=widgets.AdminSplitDateTime())
-
     source_date = forms.SplitDateTimeField(widget=widgets.AdminSplitDateTime())
 
     dataset = forms.ChoiceField(choices=Task.DATASET_CHOICES,
@@ -19,5 +16,4 @@ class TaskForm(forms.ModelForm):
 
     class Meta:
         model = Task
-        fields = ['dataset', 'provider_date', 'source', 'source_format',
-                  'source_date']
+        fields = ['dataset', 'source', 'source_format', 'source_date']

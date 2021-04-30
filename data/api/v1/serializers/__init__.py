@@ -9,3 +9,4 @@ from .cotas_parlamentares import (CotasParlamentaresSerializer,
                                   CotasParlamentaresFornecedorSerializer,
                                   CotasParlamentaresTipoDespesaSerializer,
                                   CotasParlamentaresPartidoSerializer)
+from .cotacoes_historicas_b3 import CotacoesHistoricasB3Serializer

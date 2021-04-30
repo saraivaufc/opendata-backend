@@ -11,3 +11,5 @@ from .cotas_parlamentares import (CotasParlamentaresFilter,
                                   CotasParlamentaresTrechoFilter,
                                   CotasParlamentaresUnidadeFederativaFilter,
                                   CotasParlamentaresLegislaturaFilter)
+
+from .cotacoes_historicas_b3 import CotacoesHistoricasB3Filter
