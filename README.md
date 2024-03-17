@@ -83,7 +83,7 @@ Create databases:
 ```
 psql -U postgres -W -h localhost
 
-CREATE DATABASE "coamo-rastreabilidade";
+CREATE DATABASE "opendata";
 ```
 
 Run the migrations :
@@ -113,7 +113,7 @@ python3 manage.py runserver
 sudo apt-get install rabbitmq-server
 sudo /etc/init.d/rabbitmq-server start
 sudo rabbitmq-plugins enable rabbitmq_management
-sudo rabbitmqctl add_user admin @dmin123
+sudo rabbitmqctl add_user admin secret_password
 sudo rabbitmqctl set_user_tags admin administrator
 firefox http://localhost:15672/
 ```
